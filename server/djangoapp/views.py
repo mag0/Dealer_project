@@ -91,13 +91,24 @@ def get_cars(request):
     return JsonResponse({"CarModels":cars})
 
 #Update the `get_dealerships` render list of dealerships all by default, particular state if state is passed
+
+import requests
+
 def get_dealerships(request, state="All"):
-    if(state == "All"):
+    if state == "All":
         endpoint = "/fetchDealers"
     else:
-        endpoint = "/fetchDealers/"+state
-    dealerships = get_request(endpoint)
-    return JsonResponse({"status":200,"dealers":dealerships})
+        endpoint = "/fetchDealers/" + state
+    url = f"https://guerreiromar-3030.theiadockernext-1-labs-prod-theiak8s-4-tor01.proxy.cognitiveclass.ai{endpoint}"
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        dealerships = response.json()
+        return JsonResponse({'status': 200, 'dealers': dealerships})
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching data from API: {e}")
+        return JsonResponse({'error': str(e)}, status=500)
+
 
 def get_dealer_reviews(request, dealer_id):
     # if dealer id has been provided
