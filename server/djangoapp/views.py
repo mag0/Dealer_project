@@ -92,36 +92,44 @@ def get_cars(request):
 
 #Update the `get_dealerships` render list of dealerships all by default, particular state if state is passed
 
-import requests
-
 def get_dealerships(request, state="All"):
-    if state == "All":
+    if(state == "All"):
         endpoint = "/fetchDealers"
     else:
-        endpoint = "/fetchDealers/" + state
-    url = f"https://guerreiromar-3030.theiadockernext-1-labs-prod-theiak8s-4-tor01.proxy.cognitiveclass.ai{endpoint}"
-    try:
-        response = requests.get(url)
-        response.raise_for_status()
-        dealerships = response.json()
-        return JsonResponse({'status': 200, 'dealers': dealerships})
-    except requests.exceptions.RequestException as e:
-        print(f"Error fetching data from API: {e}")
-        return JsonResponse({'error': str(e)}, status=500)
+        endpoint = "/fetchDealers/"+state
+    dealerships = get_request(endpoint)
 
+    return JsonResponse({"status":200,"dealers":dealerships})
+
+
+from django.http import JsonResponse
+from django.core.exceptions import ObjectDoesNotExist
+import requests
 
 def get_dealer_reviews(request, dealer_id):
-    # if dealer id has been provided
-    if(dealer_id):
-        endpoint = "/fetchReviews/dealer/"+str(dealer_id)
-        reviews = get_request(endpoint)
-        for review_detail in reviews:
-            response = analyze_review_sentiments(review_detail['review'])
-            print(response)
-            review_detail['sentiment'] = response['sentiment']
-        return JsonResponse({"status":200,"reviews":reviews})
-    else:
-        return JsonResponse({"status":400,"message":"Bad Request"})
+    try:
+        if dealer_id:
+            endpoint = "/fetchReviews/dealer/" + str(dealer_id)
+            reviews = get_request(endpoint)
+
+            for review_detail in reviews:
+                response = analyze_review_sentiments(review_detail['review'])
+                print(response)
+                review_detail['sentiment'] = response['sentiment']
+
+            return JsonResponse({"status": 200, "reviews": reviews})
+        else:
+            return JsonResponse({"status": 400, "message": "Bad Request"})
+
+    except ObjectDoesNotExist:
+        return JsonResponse({"status": 404, "error": "Dealer not found"})
+    except requests.exceptions.RequestException as e:
+        print(f"Network error occurred: {e}")
+        return JsonResponse({"status": 500, "error": "Network error occurred"})
+    except Exception as e:
+        print(f"Unexpected error: {e}")
+        return JsonResponse({"status": 500, "error": "Internal server error"})
+
 
 def get_dealer_details(request, dealer_id):
     if(dealer_id):

@@ -43,6 +43,7 @@ const Dealers = () => {
     }
   }
   useEffect(() => {
+    console.log(dealersList)
     get_dealers();
   },[]);  
 
