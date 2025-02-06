@@ -11,7 +11,7 @@ import logging
 import json
 from django.views.decorators.csrf import csrf_exempt
 from .populate import initiate
-from .restapis import get_request, analyze_review_sentiments, post_review
+from .restapis import get_request, analyze_review_sentiments
 from django.core.exceptions import ObjectDoesNotExist
 import requests
 
@@ -62,15 +62,18 @@ def registration(request):
         # Check if user already exists
         User.objects.get(username=username)
         username_exist = True
-    except Exception :
+    except Exception:
         # If not, simply log this is a new user
         logger.debug("{} is new user".format(username))
 
     # If it is a new user
     if not username_exist:
         # Create user in auth_user table
-        user = User.objects.create_user(username=username, 
-                                        first_name=first_name, last_name=last_name, password=password, email=email)
+        user = User.objects.create_user(username=username,
+                                        first_name=first_name, 
+                                        last_name=last_name, 
+                                        password=password, 
+                                        email=email)
         # Login the user and redirect to list page
         login(request, user)
         data = {"userName": username, "status": "Authenticated"}
@@ -93,7 +96,7 @@ def get_cars(request):
     return JsonResponse({"CarModels": cars})
 
 
-# Update the `get_dealerships` render list of dealerships all by default, 
+# Update the `get_dealerships` render list of dealerships all by default,
 # particular state if state is passed
 
 def get_dealerships(request, state="All"):
@@ -142,7 +145,7 @@ def get_dealer_details(request, dealer_id):
 
 def add_review(request):
     if not request.user.is_anonymous:
-        data = json.loads(request.body)
+        # data = json.loads(request.body)
         try:
             # response = post_review(data)
             return JsonResponse({"status": 200})
