@@ -173,4 +173,3 @@ def initiate():
             price=data['price'],
             transmission=data['transmission']
         )
-
